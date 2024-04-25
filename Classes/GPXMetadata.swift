@@ -12,14 +12,14 @@ import Foundation
  
  Information about the GPX file should be stored here.
  - Supported Info types:
-    - Name
-    - Description
-    - Author Info
-    - Copyright
-    - Date and Time
-    - Keyword
-    - Bounds
-    - Also supports extensions
+ - Name
+ - Description
+ - Author Info
+ - Copyright
+ - Date and Time
+ - Keyword
+ - Bounds
+ - Also supports extensions
  */
 public final class GPXMetadata: GPXElement, Codable {
     
@@ -51,7 +51,7 @@ public final class GPXMetadata: GPXElement, Codable {
     
     /// Keyword of the GPX file.
     public var keywords: String?
-
+    
     /// Boundaries of coordinates of the GPX file.
     public var bounds: GPXBounds?
     
@@ -73,6 +73,7 @@ public final class GPXMetadata: GPXElement, Codable {
     ///     - raw: Raw element expected from parser
     init(raw: GPXRawElement) {
         //super.init()
+        let datePaser = GPXDateParser()
         for child in raw.children {
             //let text = child.text
             
@@ -82,7 +83,7 @@ public final class GPXMetadata: GPXElement, Codable {
             case "author":      self.author = GPXAuthor(raw: child)
             case "copyright":   self.copyright = GPXCopyright(raw: child)
             case "link":        self.links.append(GPXLink(raw: child))
-            case "time":        self.time = GPXDateParser().parse(date: child.text)
+            case "time":        self.time = datePaser.parse(date: child.text)
             case "keywords":    self.keywords = child.text
             case "bounds":      self.bounds = GPXBounds(raw: child)
             case "extensions":  self.extensions = GPXExtensions(raw: child)

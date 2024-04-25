@@ -22,12 +22,19 @@ final class GPXDateParser {
     
     // MARK:- Supporting Variables
     
-    #if !os(Linux)
+#if !os(Linux)
     /// Caching Calendar such that it can be used repeatedly without reinitializing it.
-    private static var calendarCache = [Int : Calendar]()
+    private static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        if let timeZone = TimeZone(secondsFromGMT: 0) {
+            calendar.timeZone = timeZone
+        }
+        return calendar
+    }()
+    
     /// Components of Date stored together
     private var components = DateComponents()
-    #endif // !os(Linux)
+#endif // !os(Linux)
     
     // MARK:- Individual Date Components
     
@@ -55,16 +62,15 @@ final class GPXDateParser {
             return nil
         }
         
-        #if os(Linux)
+#if os(Linux)
         return ISO8601DateFormatter().date(from: NonNilString)
-        #else // os(Linux)
+#else // os(Linux)
         _ = withVaList([year, month, day, hour, minute,
                         second], { pointer in
-                            vsscanf(NonNilString, "%d-%d-%dT%d:%d:%dZ", pointer)
-                            
+            vsscanf(NonNilString, "%d-%d-%dT%d:%d:%dZ", pointer)
+            
         })
         
-
         components.year = year.pointee
         components.minute = minute.pointee
         components.day = day.pointee
@@ -72,15 +78,8 @@ final class GPXDateParser {
         components.month = month.pointee
         components.second = second.pointee
         
-        if let calendar = Self.calendarCache[0] {
-            return calendar.date(from: components)
-        }
-        
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        Self.calendarCache[0] = calendar
-        return calendar.date(from: components)
-        #endif
+        return Self.calendar.date(from: components)
+#endif
     }
     
     /// Parses a year string as native Date type.
@@ -94,19 +93,12 @@ final class GPXDateParser {
             
         })
         
-        #if os(Linux)
+#if os(Linux)
         return DateComponents(year: year.pointee).date
-        #else // os(Linux)
+#else // os(Linux)
         components.year = year.pointee
         
-        if let calendar = Self.calendarCache[1] {
-            return calendar.date(from: components)
-        }
-        
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        Self.calendarCache[1] = calendar
-        return calendar.date(from: components)
-        #endif
+        return Self.calendar.date(from: components)
+#endif
     }
 }

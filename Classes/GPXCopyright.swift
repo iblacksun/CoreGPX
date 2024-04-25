@@ -59,9 +59,10 @@ public final class GPXCopyright: GPXElement, Codable {
     /// - Parameters:
     ///     - raw: Raw element expected from parser
     init(raw: GPXRawElement) {
+        let datePaser = GPXDateParser()
         for child in raw.children {
             switch child.name {
-            case "year":    self.year = GPXDateParser().parse(year: child.text)
+            case "year":    self.year = datePaser.parse(year: child.text)
             case "license": self.license = child.text
             default: continue
             }

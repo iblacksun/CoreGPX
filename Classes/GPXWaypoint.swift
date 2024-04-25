@@ -261,10 +261,10 @@ public class GPXWaypoint: GPXElement, GPXWaypointProtocol, Codable {
     init(raw: GPXRawElement) {
         self.latitude = Convert.toDouble(from: raw.attributes["lat"])
         self.longitude = Convert.toDouble(from: raw.attributes["lon"])
-        
+        let datePaser = GPXDateParser()
         for child in raw.children {
             switch child.name {
-            case "time":        self.time = GPXDateParser().parse(date: child.text)
+            case "time":        self.time = datePaser.parse(date: child.text)
             case "ele":         self.elevation = Convert.toDouble(from: child.text)
             case "magvar":      self.magneticVariation = Convert.toDouble(from: child.text)
             case "geoidheight": self.geoidHeight = Convert.toDouble(from: child.text)

@@ -19,10 +19,10 @@ public enum GPXVersion: String {
     
     func getSchemaSite() -> String {
         switch self {
-            case .pre4: return "http://www.topografix.com/GPX/0/4"
-            case .pre5: return "http://www.topografix.com/GPX/0/5"
-            case .pre6: return "http://www.topografix.com/GPX/0/6"
-            case   .v1: return "http://www.topografix.com/GPX/1/0"
+        case .pre4: return "http://www.topografix.com/GPX/0/4"
+        case .pre5: return "http://www.topografix.com/GPX/0/5"
+        case .pre6: return "http://www.topografix.com/GPX/0/6"
+        case   .v1: return "http://www.topografix.com/GPX/1/0"
             
         }
     }
@@ -81,14 +81,14 @@ public final class GPXLegacyRoot: GPXElement, GPXRootElement {
             switch key {
             case "creator":             self.creator = value
             case "version":             self.version = GPXVersion(rawValue: value) ?? .v1
-            //case "xsi:schemaLocation":  self.schemaLocation = value
-            //case "xmlns:xsi":           continue
-            //case "xmlns":               continue
+                //case "xsi:schemaLocation":  self.schemaLocation = value
+                //case "xmlns:xsi":           continue
+                //case "xmlns":               continue
             default: continue
             }
         }
-        
-       for child in raw.children {
+        let datePaser = GPXDateParser()
+        for child in raw.children {
             switch child.name {
             case "name":     self.name = child.text
             case "desc":     self.desc = child.text
@@ -96,7 +96,7 @@ public final class GPXLegacyRoot: GPXElement, GPXRootElement {
             case "email":    self.email = child.text
             case "url":      if let text = child.text { self.url = URL(string: text) }
             case "urlname":  self.urlName = child.text
-            case "time":     self.time = GPXDateParser().parse(date: child.text)
+            case "time":     self.time = datePaser.parse(date: child.text)
             case "keywords": self.keywords = child.text
             case "bounds":   self.bounds = GPXBounds(raw: child)
             case "wpt":      self.waypoints.append(GPXLegacyWaypoint(raw: child))
@@ -123,17 +123,17 @@ public final class GPXLegacyRoot: GPXElement, GPXRootElement {
     }
     
     /*
-    public func addEmail(_ email: String) throws {
-        let schemaPattern = #"[\p{L}_]+(\.[\p{L}_]+)*@[\p{L}_]+(\.[\p{L}_]+)+"#
-        
-        if email.range(of: schemaPattern, options: .regularExpression) != nil {
-            self.email = email
-        }
-        else {
-            throw GPXError.others.invalidEmail
-        }
-    }
-    */
+     public func addEmail(_ email: String) throws {
+     let schemaPattern = #"[\p{L}_]+(\.[\p{L}_]+)*@[\p{L}_]+(\.[\p{L}_]+)+"#
+     
+     if email.range(of: schemaPattern, options: .regularExpression) != nil {
+     self.email = email
+     }
+     else {
+     throw GPXError.others.invalidEmail
+     }
+     }
+     */
     
     public func upgrade() -> GPXRoot {
         let modern = GPXRoot(creator: creator)
@@ -152,7 +152,7 @@ public final class GPXLegacyRoot: GPXElement, GPXRootElement {
             mLink.text = urlName
             meta.links.append(mLink)
         }
-
+        
         meta.time = time
         meta.keywords = keywords
         meta.bounds = bounds
@@ -160,7 +160,7 @@ public final class GPXLegacyRoot: GPXElement, GPXRootElement {
         modern.metadata = meta
         
         /* REMINDER:
-           ADD WPT, TRK, RTE types!! */
+         ADD WPT, TRK, RTE types!! */
         for wpt in waypoints {
             modern.add(waypoint: wpt.upgrade())
         }
@@ -261,10 +261,10 @@ public class GPXLegacyWaypoint: GPXElement, GPXWaypointProtocol {
     init(raw: GPXRawElement) {
         self.latitude = Convert.toDouble(from: raw.attributes["lat"])
         self.longitude = Convert.toDouble(from: raw.attributes["lon"])
-        
+        let datePaser = GPXDateParser()
         for child in raw.children {
             switch child.name {
-            case "time":        self.time = GPXDateParser().parse(date: child.text)
+            case "time":        self.time = datePaser.parse(date: child.text)
             case "ele":         self.elevation = Convert.toDouble(from: child.text)
             case "magvar":      self.magneticVariation = Convert.toDouble(from: child.text)
             case "geoidheight": self.geoidHeight = Convert.toDouble(from: child.text)
@@ -283,7 +283,7 @@ public class GPXLegacyWaypoint: GPXElement, GPXWaypointProtocol {
             case "pdop":        self.positionDilution = Convert.toDouble(from: child.text)
             case "dgpsid":      self.DGPSid = Convert.toInt(from: child.text)
             case "ageofdgpsid": self.ageofDGPSData = Convert.toDouble(from: child.text)
-            //case "extensions":  self.extensions = GPXExtensions(raw: child)
+                //case "extensions":  self.extensions = GPXExtensions(raw: child)
             default: continue
             }
         }
@@ -336,18 +336,18 @@ public class GPXLegacyWaypoint: GPXElement, GPXWaypointProtocol {
         self.addProperty(forValue: comment, gpx: gpx, tagName: "cmt", indentationLevel: indentationLevel)
         self.addProperty(forValue: desc, gpx: gpx, tagName: "desc", indentationLevel: indentationLevel)
         self.addProperty(forValue: source, gpx: gpx, tagName: "src", indentationLevel: indentationLevel)
-
+        
         if let url = url {
             self.addProperty(forValue: url.absoluteString, gpx: gpx, tagName: "url", indentationLevel: indentationLevel)
         }
         self.addProperty(forValue: urlName, gpx: gpx, tagName: "urlname", indentationLevel: indentationLevel)
         self.addProperty(forValue: symbol, gpx: gpx, tagName: "sym", indentationLevel: indentationLevel)
         self.addProperty(forValue: type, gpx: gpx, tagName: "type", indentationLevel: indentationLevel)
-
+        
         if let fix = self.fix?.rawValue {
-           self.addProperty(forValue: fix, gpx: gpx, tagName: "fix", indentationLevel: indentationLevel)
+            self.addProperty(forValue: fix, gpx: gpx, tagName: "fix", indentationLevel: indentationLevel)
         }
-
+        
         self.addProperty(forIntegerValue: satellites, gpx: gpx, tagName: "sat", indentationLevel: indentationLevel)
         self.addProperty(forDoubleValue: horizontalDilution, gpx: gpx, tagName: "hdop", indentationLevel: indentationLevel)
         self.addProperty(forDoubleValue: verticalDilution, gpx: gpx, tagName: "vdop", indentationLevel: indentationLevel)
@@ -540,7 +540,7 @@ public class GPXLegacyTrack: GPXElement {
     
     // MARK: TODO, ##other
     // according to schema, ##other, meant that additional tags can be added, kinda like extensions.
-   
+    
     public var segments = [GPXLegacyTrackSegment]()
     
     init(raw: GPXRawElement) {

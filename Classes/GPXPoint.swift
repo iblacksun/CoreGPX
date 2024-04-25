@@ -13,7 +13,7 @@ import Foundation
  `ptType` of GPX schema. Not supported in GPXRoot, nor GPXParser's parsing.
  */
 open class GPXPoint: GPXElement, Codable {
-
+    
     /// Elevation Value in (metre, m)
     public var elevation: Double?
     /// Time/Date of creation
@@ -52,10 +52,11 @@ open class GPXPoint: GPXElement, Codable {
     init(raw: GPXRawElement) {
         self.latitude = Convert.toDouble(from: raw.attributes["lat"])
         self.longitude = Convert.toDouble(from: raw.attributes["lon"])
+        let datePaser = GPXDateParser()
         for child in raw.children {
             switch child.name {
             case "ele": self.elevation = Convert.toDouble(from: child.text)
-            case "time": self.time = GPXDateParser().parse(date: child.text)
+            case "time": self.time = datePaser.parse(date: child.text)
             default: continue
             }
         }
